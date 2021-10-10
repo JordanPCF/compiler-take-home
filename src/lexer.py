@@ -22,8 +22,11 @@ TOKEN_TYPES = {
     'OP': 54,
     'NUMBER': 2,
     'NEWLINE': 4,
+    'NL': 61,
     'ENDMARKER': 0,
-    'ENCODING': 62
+    'ENCODING': 62,
+    'INDENT': 5,
+    'DEDENT': 6
 }
 
 
@@ -81,9 +84,25 @@ def _transform_tokens(tokens):
                                             current_token.start[0]))
             token_idx += 1
 
+        elif current_token_type == 'op':
+            transformed_tokens.append(Token('op',
+                                            current_token.string,
+                                            current_token.start[0]))
+            token_idx += 1
+
         elif current_token_type == 'encoding_info':
             # skip it
             token_idx += 1
+
+        elif current_token_type == 'WHITESPACE':
+            if next_token_type == 'EOF':
+                transformed_tokens.append(Token('EOF',
+                                                '',
+                                                next_token.start[0]))
+                break
+            else:
+                # skip it
+                token_idx += 1
 
         elif current_token_type == 'NEWLINE':
             if next_token_type == 'EOF':
@@ -93,7 +112,7 @@ def _transform_tokens(tokens):
                 break
             else:
                 transformed_tokens.append(Token('NEWLINE',
-                                                '\n',
+                                                '\\n',
                                                 current_token.start[0]))
             token_idx += 1
 
@@ -106,8 +125,11 @@ def _transform_tokens(tokens):
 def _get_token_type(token):
     token_type = ''
 
-    if token.type == TOKEN_TYPES['ERRORTOKEN'] and token.string == '$':
-        token_type = 'DOLLAR'
+    if token.type == TOKEN_TYPES['ERRORTOKEN']:
+        if token.string == '$':
+            token_type = 'DOLLAR'
+        elif token.string == ' ':
+            token_type = 'WHITESPACE'
 
     elif token.type == TOKEN_TYPES['NAME']:
         token_type = 'name'
@@ -115,14 +137,23 @@ def _get_token_type(token):
     elif token.type == TOKEN_TYPES['OP'] and token.string == '=':
         token_type = 'EQUALS'
 
+    elif token.type == TOKEN_TYPES['OP'] and token.string == '+':
+        token_type = 'op'
+
+    elif token.type == TOKEN_TYPES['OP'] and token.string == '-':
+        token_type = 'op'
+
     elif token.type == TOKEN_TYPES['NUMBER']:
         token_type = 'int_literal'
 
     elif token.type == TOKEN_TYPES['ENCODING']:
         token_type = 'encoding_info'
 
-    elif token.type == TOKEN_TYPES['NEWLINE']:
+    elif token.type == TOKEN_TYPES['NEWLINE'] or token.type == TOKEN_TYPES['NL']:
         token_type = 'NEWLINE'
+
+    elif token.type == TOKEN_TYPES['INDENT'] or token.type == TOKEN_TYPES['DEDENT']:
+        token_type = 'WHITESPACE'
 
     elif token.type == TOKEN_TYPES['ENDMARKER']:
         token_type = 'EOF'

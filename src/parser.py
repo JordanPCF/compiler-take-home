@@ -1,22 +1,34 @@
 from grammar import SyntaxChecker
+'''
+a := assignment | equation
 
+assignment := constant EQUALS term
+equation := constant EQUALS term op term
+
+term := int_literal | constant
+constant := DOLAR name
+name := [a-zA-Z]+
+int_literal := [0-9]+
+op := '+' | '-'
+
+'''
 
 class Parser():
 
-    def __init__(self, all_tokens):
-        self.all_tokens = all_tokens
+    def __init__(self, token_sequence):
+        self.token_sequence = token_sequence
 
         self.asts = []
         self.syntax = SyntaxChecker()
         self.parsing_idx = 0
 
     def parse(self):
-        while self.all_tokens[self.parsing_idx].type != 'EOF':
+        while self.token_sequence[self.parsing_idx].type != 'EOF':
             self._parse_a()
 
 
     def _parse_a(self):
-        tokens = self.all_tokens[self.parsing_idx:]
+        tokens = self.token_sequence[self.parsing_idx:]
 
         if self.syntax.match_grammar_a(tokens):
             if self.syntax.match_grammar_assignment(tokens):

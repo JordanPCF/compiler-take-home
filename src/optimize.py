@@ -1,25 +1,32 @@
 class Block():
     '''
-    Node of CFG
+    Node of CFG. A linked-list of code commands within the same control block
 
     Between blocks: Do liveness analysis for dead-code elimination and register allocation 
     '''
-    def __init__(self, commands=None, live_in=set()):
+    def __init__(self, commands, live_in=set()):
         self.head = None
+        self.commands = commands
 
-        if commands is not None:
-            node = Node(commands.pop(0))
+        # build linked-list
+        if self.commands is not None:
+            node = Node(self.commands.pop(0))
             self.head = node
-            for command in commands:
+            for command in self.commands:
                 node.next = Node(command)
                 node = node.next
-
 
         # would use these if had branches
         self.live_in = live_in
         self.used = set()
         self.defined = set()
         self.live_out = set()
+
+    def __iter__(self):
+        node = self.head
+        while node is not None:
+            yield node
+            node = node.next
 
     def __repr__(self):
         node = self.head
@@ -29,6 +36,13 @@ class Block():
             node = node.next
 
         return " \n | \n | \n v \n ".join(nodes)
+
+    def track_defined_variables(self):
+        # for node in self:
+        pass
+
+
+
 
 class Node():
     '''

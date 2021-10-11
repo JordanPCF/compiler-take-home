@@ -59,6 +59,7 @@ def _transform_tokens(tokens):
     while token_idx < len(tokens) - 1:
         current_token = tokens[token_idx]
         current_token_type = _get_token_type(current_token)
+        current_token_line_num = current_token.start[0]
 
         next_token = tokens[token_idx + 1]
         next_token_type = _get_token_type(next_token)
@@ -67,7 +68,7 @@ def _transform_tokens(tokens):
             if next_token_type == 'name':
                 transformed_tokens.append(Token('constant',
                                                 next_token.string,
-                                                next_token.start[0]))
+                                                current_token_line_num))
                 token_idx += 2
             else:
                 raise SyntaxError("'$' must be followed by a constant name")
@@ -75,19 +76,19 @@ def _transform_tokens(tokens):
         elif current_token_type == 'EQUALS':
             transformed_tokens.append(Token('EQUALS',
                                             '=',
-                                            current_token.start[0]))  
+                                            current_token_line_num))  
             token_idx += 1
 
         elif current_token_type == 'int_literal':
             transformed_tokens.append(Token('int_literal',
                                             int(current_token.string),
-                                            current_token.start[0]))
+                                            current_token_line_num))
             token_idx += 1
 
         elif current_token_type == 'op':
             transformed_tokens.append(Token('op',
                                             current_token.string,
-                                            current_token.start[0]))
+                                            current_token_line_num))
             token_idx += 1
 
         elif current_token_type == 'encoding_info':
@@ -98,7 +99,7 @@ def _transform_tokens(tokens):
             if next_token_type == 'EOF':
                 transformed_tokens.append(Token('EOF',
                                                 '',
-                                                next_token.start[0]))
+                                                current_token_line_num))
                 break
             else:
                 # skip it
@@ -108,12 +109,12 @@ def _transform_tokens(tokens):
             if next_token_type == 'EOF':
                 transformed_tokens.append(Token('EOF',
                                                 '',
-                                                next_token.start[0]))
+                                                current_token_line_num))
                 break
             else:
                 transformed_tokens.append(Token('NEWLINE',
                                                 '\\n',
-                                                current_token.start[0]))
+                                                current_token_line_num))
             token_idx += 1
 
         else:

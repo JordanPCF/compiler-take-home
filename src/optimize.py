@@ -8,6 +8,15 @@ class Block():
         self.head = None
         self.commands = commands
 
+        # keep track of the state of variables at each node in the block
+        self.defined = set()
+        self.unused = dict()
+        self.nodes_to_remove = set()
+
+        # would use these if had control branches
+        self.live_in = live_in
+        self.live_out = set()
+
         # build linked-list
         if self.commands is not None:
             node = Node(self.commands.pop(0))
@@ -16,17 +25,6 @@ class Block():
                 node.next = Node(command)
                 node = node.next
 
-        # would use these if had branches
-        self.live_in = live_in
-        self.used = set()
-        self.defined = set()
-        self.live_out = set()
-
-    def __iter__(self):
-        node = self.head
-        while node is not None:
-            yield node
-            node = node.next
 
     def __repr__(self):
         node = self.head
@@ -37,26 +35,16 @@ class Block():
 
         return " \n | \n | \n v \n ".join(nodes)
 
-    def track_defined_variables(self):
-        # for node in self:
-        pass
-
-
-
 
 class Node():
     '''
     Code lines/nodes WITHIN a Block
 
     '''
-    def __init__(self, command, defined=set(), unused=set(), nodes_to_remove=set()):
+    def __init__(self, command):
         self.command = command
         self.next = None
 
-        # keep track of the state of variables at each node in the block
-        self.defined = defined
-        self.unused = unused
-        self.nodes_to_remove = nodes_to_remove
 
     def __repr__(self):
         return str(self.command)
@@ -66,6 +54,20 @@ class Node():
 
 
 class Command():
+    '''
+    Intermediate Representation
+
+    properties:
+    type_: STORE, ADD, SUBTRACT, MOVE, EOF
+
+    e.g.
+    $cat = 2         ---->    Command('STORE', operand1=2, target='cat')
+    $cat = 2 + 10    ---->    Command('ADD', operand1=2, operand2=10, target='cat')
+    $cat = 2 - 10    ---->    Command('SUBTRACT', operand1=2, operand2=10, target='cat')
+    $dog = $cat      ---->    Command('MOVE', operand1=cat, target='dog')
+                              Command('EOF')
+
+    '''
     def __init__(self, type_, operand1=None, operand2=None, target=None):
         self.type_ = type_
         self.operand1 = operand1

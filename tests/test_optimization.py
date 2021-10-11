@@ -40,6 +40,22 @@ def test_constant_propagation():
     pass
 
 def test_dead_code_elimination():
+    '''
+    l1    x = 2 
+                        defined = (x)
+                        unused = {x: l1}
+    l2    y = 1 + 4 
+                        defined = (x, y)
+                        unused = {x: l1, y: l2}
+    l3    z = y - 2
+                        defined = (x, y, z)
+                        unused = {x: l1, z: l3}
+    l4    x = z
+                        defined = (x, y, z)
+                        unused = {x: l4}
+                        nodes_to_remove = (l1)
+
+    '''
     pass
 
 

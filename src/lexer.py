@@ -40,6 +40,15 @@ def tokenize(file_name):
 
     Will use the lexing capabilities of the 'tokenize' package and then transform
     those tokens to the above forms
+
+    Parameters
+    -----------
+    file_name: string
+        text file with DSL
+
+    Returns
+    -----------
+    transformed_tokens: List of Token objects
     '''
     tokens = _get_tokens(file_name)
     transformed_tokens = _transform_tokens(tokens)
@@ -53,6 +62,17 @@ def _get_tokens(file_name):
 
 
 def _transform_tokens(tokens):
+    '''
+    Transforms 'tokenize' package's tokens to custom Token object to match grammar
+
+    Parameters
+    -----------
+    tokens: list of tkn Token objects
+
+    Returns
+    ----------
+    transformed_tokens: list of Token objects defined above
+    '''
     transformed_tokens = []
     token_idx = 0
 

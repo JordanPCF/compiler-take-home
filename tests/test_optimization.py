@@ -56,7 +56,18 @@ def test_dead_code_elimination():
                         nodes_to_remove = (l1)
 
     '''
-    pass
+    lines1 = [optimize.Command('STORE', operand1=2, target='cat'),
+             optimize.Command('ADD', operand1=1, operand2=2, target='dog'),
+             optimize.Command('MOVE', operand1='dog', target='cat')]
+
+    lines2 = [optimize.Command('ADD', operand1=1, operand2=2, target='dog'),
+              optimize.Command('MOVE', operand1='dog', target='cat')]
+
+    code_block = optimize.Block(lines1)
+    code_block.eliminate_dead_code()
+    
+    assert code_block == optimize.Block(lines2)
+
 
 
 

@@ -35,6 +35,87 @@ class Block():
 
         return " \n | \n | \n v \n ".join(nodes)
 
+    def __iter__(self):
+        node = self.head
+        while node is not None:
+            yield node
+            node = node.next
+
+    def __eq__(self, other):
+        return (isinstance(self, other.__class__)) and (self.head == other.head)
+
+
+
+    def _assess_liveness(self):
+        for node in self:
+            oprnd1 = node.command.operand1
+            oprnd2 = node.command.operand2
+            target = node.command.target
+            node_num = node.command.node_num
+
+            # update variables defined
+            self.defined.add(target)
+            self.unused[target] = node_num
+
+            # update what variables have been used in block
+            if oprnd1 is not None and oprnd1 in self.unused:
+                del self.unused[oprnd1]
+            if oprnd2 is not None and oprnd2 in self.unused:
+                del self.unused[oprnd1]
+
+    def syntax_check(self):
+        # determine if variable used before defined
+        for node in self:
+            oprnd1 = node.command.operand1
+            oprnd2 = node.command.operand2
+            target = node.command.target
+            node_num = node.command.node_num
+
+            if (oprnd1 is not None) and (oprnd1 not in self.defined):
+                raise Exception(f'{oprnd1} on line {node_num} not defined')
+
+            if (oprnd2 is not None) and (oprnd2 not in self.defined):
+                raise Exception(f'{oprnd2} on line {node_num} not defined')
+
+
+
+    def remove_node(self, node_num):
+        if self.head is None:
+            raise Exception('Block is empty')
+
+        if self.head.command.node_num == node_num:
+            self.head = self.head.next
+            return
+
+        previous_node = self.head
+        for node in self:
+            if node.command.node_num == node_num:
+                previous_node.next = node.next
+                return
+            previous_node = node
+
+        raise Exception(f'{node_num} not found')
+
+
+
+    def _find_dead_code(self):
+        self._assess_liveness()
+        for node in self:
+            oprnd1 = node.command.operand1
+            oprnd2 = node.command.operand2
+            target = node.command.target
+
+            if (target is not None) and (target in self.unused):
+                node_to_remove = self.unused.pop(target)
+                self.nodes_to_remove.add(node_to_remove)
+
+    def eliminate_dead_code(self):
+        self._find_dead_code()
+        print('nodes to remove', self.nodes_to_remove)
+        for node_num in self.nodes_to_remove:
+            self.remove_node(node_num)
+
+
 
 class Node():
     '''
@@ -50,7 +131,8 @@ class Node():
         return str(self.command)
 
     def __eq__(self, other):
-        return (isinstance(self, other.__class__)) and (self.command == other.command)
+        return ((isinstance(self, other.__class__)) and (self.command == other.command) 
+            and (self.next == other.next))
 
 
 class Command():
@@ -68,11 +150,12 @@ class Command():
                               Command('EOF')
 
     '''
-    def __init__(self, type_, operand1=None, operand2=None, target=None):
+    def __init__(self, type_, operand1=None, operand2=None, target=None, node_num=None):
         self.type_ = type_
         self.operand1 = operand1
         self.operand2 = operand2
         self.target = target
+        self.node_num = node_num
 
     def __repr__(self):
         return f'{self.type_}({self.operand1}, {self.operand2} -> {self.target})'

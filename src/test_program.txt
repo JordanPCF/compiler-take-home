@@ -1,5 +1,0 @@
-$cat = 2
-$dog = 9
-
-$meow = $cat - $dog
-$woof = $dog + 10
